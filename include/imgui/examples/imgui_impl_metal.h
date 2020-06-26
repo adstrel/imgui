@@ -11,7 +11,7 @@
 // If you are new to dear imgui, read examples/README.txt and read the documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-#include "imgui.h"      // IMGUI_IMPL_API
+#include "imgui/imgui.h"      // IMGUI_IMPL_API
 
 @class MTLRenderPassDescriptor;
 @protocol MTLDevice, MTLCommandBuffer, MTLRenderCommandEncoder;

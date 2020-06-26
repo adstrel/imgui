@@ -1,6 +1,6 @@
 #import "ViewController.h"
 #import "Renderer.h"
-#include "imgui.h"
+#include "imgui/imgui.h"
 
 #if TARGET_OS_OSX
 #include "imgui_impl_osx.h"

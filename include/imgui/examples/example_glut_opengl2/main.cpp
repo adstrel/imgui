@@ -5,7 +5,7 @@
 // !!! If someone or something is teaching you GLUT in 2020, you are being abused. Please show some resistance. !!!
 // !!! Nowadays, prefer using GLFW or SDL instead!
 
-#include "imgui.h"
+#include "imgui/imgui.h"
 #include "imgui_impl_glut.h"
 #include "imgui_impl_opengl2.h"
 #ifdef __APPLE__

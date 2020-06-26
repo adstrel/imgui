@@ -9,7 +9,7 @@
 //  [ ] Platform: Keys are all generally very broken. Best using [event keycode] and not [event characters]..
 //  [ ] Platform: Multi-viewport / platform windows.
 
-#include "imgui.h"      // IMGUI_IMPL_API
+#include "imgui/imgui.h"      // IMGUI_IMPL_API
 
 @class NSEvent;
 @class NSView;

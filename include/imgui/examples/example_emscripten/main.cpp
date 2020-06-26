@@ -6,7 +6,7 @@
 // If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 // (Emscripten is a C++-to-javascript compiler, used to publish executables for the web. See https://emscripten.org/)
 
-#include "imgui.h"
+#include "imgui/imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>

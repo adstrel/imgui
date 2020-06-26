@@ -9,7 +9,7 @@
 // https://github.com/ocornut/imgui
 
 #pragma once
-#include "imgui.h"      // IMGUI_IMPL_API
+#include "imgui/imgui.h"      // IMGUI_IMPL_API
 
 IMGUI_IMPL_API bool     ImGui_Marmalade_Init(bool install_callbacks);
 IMGUI_IMPL_API void     ImGui_Marmalade_Shutdown();

@@ -1,7 +1,7 @@
 #import "Renderer.h"
 #import <Metal/Metal.h>
 
-#include "imgui.h"
+#include "imgui/imgui.h"
 #include "imgui_impl_metal.h"
 
 #if TARGET_OS_OSX
