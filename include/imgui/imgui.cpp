@@ -601,7 +601,10 @@ CODE
  FREQUENTLY ASKED QUESTIONS (FAQ)
  ================================
 
- Read all answers online: https://www.dearimgui.org/faq, or in docs/FAQ.md (with a Markdown viewer)
+ Read all answers online:
+   https://www.dearimgui.org/faq or https://github.com/ocornut/imgui/blob/master/docs/FAQ.md (same url)
+ Read all answers locally (with a text editor or ideally a Markdown viewer):
+   docs/FAQ.md
  Some answers are copied down here to facilitate searching in code.
 
  Q&A: Basics
@@ -640,130 +643,15 @@ CODE
  Q: I integrated Dear ImGui in my engine and little squares are showing instead of text..
  Q: I integrated Dear ImGui in my engine and some elements are clipping or disappearing when I move windows around..
  Q: I integrated Dear ImGui in my engine and some elements are displaying outside their expected windows boundaries..
->> See https://www.dearimgui.org/faq
+ >> See https://www.dearimgui.org/faq
 
  Q&A: Usage
  ----------
 
- Q: Why are multiple widgets reacting when I interact with a single one?
- Q: How can I have multiple widgets with the same label or with an empty label?
- A: A primer on labels and the ID Stack...
-
-    Dear ImGui internally need to uniquely identify UI elements.
-    Elements that are typically not clickable (such as calls to the Text functions) don't need an ID.
-    Interactive widgets (such as calls to Button buttons) need a unique ID.
-    Unique ID are used internally to track active widgets and occasionally associate state to widgets.
-    Unique ID are implicitly built from the hash of multiple elements that identify the "path" to the UI element.
-
-   - Unique ID are often derived from a string label:
-
-       Button("OK");          // Label = "OK",     ID = hash of (..., "OK")
-       Button("Cancel");      // Label = "Cancel", ID = hash of (..., "Cancel")
-
-   - ID are uniquely scoped within windows, tree nodes, etc. which all pushes to the ID stack. Having
-     two buttons labeled "OK" in different windows or different tree locations is fine.
-     We used "..." above to signify whatever was already pushed to the ID stack previously:
-
-       Begin("MyWindow");
-       Button("OK");          // Label = "OK",     ID = hash of ("MyWindow", "OK")
-       End();
-       Begin("MyOtherWindow");
-       Button("OK");          // Label = "OK",     ID = hash of ("MyOtherWindow", "OK")
-       End();
-
-   - If you have a same ID twice in the same location, you'll have a conflict:
-
-       Button("OK");
-       Button("OK");          // ID collision! Interacting with either button will trigger the first one.
-
-     Fear not! this is easy to solve and there are many ways to solve it!
-
-   - Solving ID conflict in a simple/local context:
-     When passing a label you can optionally specify extra ID information within string itself.
-     Use "##" to pass a complement to the ID that won't be visible to the end-user.
-     This helps solving the simple collision cases when you know e.g. at compilation time which items
-     are going to be created:
-
-       Begin("MyWindow");
-       Button("Play");        // Label = "Play",   ID = hash of ("MyWindow", "Play")
-       Button("Play##foo1");  // Label = "Play",   ID = hash of ("MyWindow", "Play##foo1")  // Different from above
-       Button("Play##foo2");  // Label = "Play",   ID = hash of ("MyWindow", "Play##foo2")  // Different from above
-       End();
-
-   - If you want to completely hide the label, but still need an ID:
-
-       Checkbox("##On", &b);  // Label = "",       ID = hash of (..., "##On")   // No visible label, just a checkbox!
-
-   - Occasionally/rarely you might want change a label while preserving a constant ID. This allows
-     you to animate labels. For example you may want to include varying information in a window title bar,
-     but windows are uniquely identified by their ID. Use "###" to pass a label that isn't part of ID:
-
-       Button("Hello###ID");  // Label = "Hello",  ID = hash of (..., "###ID")
-       Button("World###ID");  // Label = "World",  ID = hash of (..., "###ID")  // Same as above, even though the label looks different
-
-       sprintf(buf, "My game (%f FPS)###MyGame", fps);
-       Begin(buf);            // Variable title,   ID = hash of "MyGame"
-
-   - Solving ID conflict in a more general manner:
-     Use PushID() / PopID() to create scopes and manipulate the ID stack, as to avoid ID conflicts
-     within the same window. This is the most convenient way of distinguishing ID when iterating and
-     creating many UI elements programmatically.
-     You can push a pointer, a string or an integer value into the ID stack.
-     Remember that ID are formed from the concatenation of _everything_ pushed into the ID stack.
-     At each level of the stack we store the seed used for items at this level of the ID stack.
-
-     Begin("Window");
-       for (int i = 0; i < 100; i++)
-       {
-         PushID(i);           // Push i to the id tack
-         Button("Click");     // Label = "Click",  ID = hash of ("Window", i, "Click")
-         PopID();
-       }
-       for (int i = 0; i < 100; i++)
-       {
-         MyObject* obj = Objects[i];
-         PushID(obj);
-         Button("Click");     // Label = "Click",  ID = hash of ("Window", obj pointer, "Click")
-         PopID();
-       }
-       for (int i = 0; i < 100; i++)
-       {
-         MyObject* obj = Objects[i];
-         PushID(obj->Name);
-         Button("Click");     // Label = "Click",  ID = hash of ("Window", obj->Name, "Click")
-         PopID();
-       }
-       End();
-
-   - You can stack multiple prefixes into the ID stack:
-
-       Button("Click");       // Label = "Click",  ID = hash of (..., "Click")
-       PushID("node");
-       Button("Click");       // Label = "Click",  ID = hash of (..., "node", "Click")
-         PushID(my_ptr);
-           Button("Click");   // Label = "Click",  ID = hash of (..., "node", my_ptr, "Click")
-         PopID();
-       PopID();
-
-   - Tree nodes implicitly creates a scope for you by calling PushID().
-
-       Button("Click");       // Label = "Click",  ID = hash of (..., "Click")
-       if (TreeNode("node"))  // <-- this function call will do a PushID() for you (unless instructed not to, with a special flag)
-       {
-         Button("Click");     // Label = "Click",  ID = hash of (..., "node", "Click")
-         TreePop();
-       }
-
-   - When working with trees, ID are used to preserve the open/close state of each tree node.
-     Depending on your use cases you may want to use strings, indices or pointers as ID.
-      e.g. when following a single pointer that may change over time, using a static string as ID
-       will preserve your node open/closed state when the targeted object change.
-      e.g. when displaying a list of objects, using indices or pointers as ID will preserve the
-       node open/closed state differently. See what makes more sense in your situation!
-
+ Q: How can I have widgets with an empty label?
+ Q: How can I have multiple widgets with the same label?
+ Q: Why are multiple widgets reacting when I interact with one?
  Q: How can I display an image? What is ImTextureID, how does it works?
- >> See https://www.dearimgui.org/faq and https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
-
  Q: How can I use my own math types instead of ImVec2/ImVec4?
  Q: How can I interact with standard C++ types (such as std::string and std::vector)?
  Q: How can I display custom shapes? (using low-level ImDrawList API)
@@ -964,7 +852,7 @@ static void             UpdateMouseInputs();
 static void             UpdateMouseWheel();
 static void             UpdateTabFocus();
 static void             UpdateDebugToolItemPicker();
-static bool             UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& size_auto_fit, int* border_held, int resize_grip_count, ImU32 resize_grip_col[4]);
+static bool             UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& size_auto_fit, int* border_held, int resize_grip_count, ImU32 resize_grip_col[4], const ImRect& visibility_rect);
 static void             RenderWindowOuterBorders(ImGuiWindow* window);
 static void             RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar_rect, bool title_bar_is_highlight, int resize_grip_count, const ImU32 resize_grip_col[4], float resize_grip_draw_size);
 static void             RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& title_bar_rect, const char* name, bool* p_open);
@@ -5131,7 +5019,7 @@ ImGuiID ImGui::GetWindowResizeID(ImGuiWindow* window, int n)
 
 // Handle resize for: Resize Grips, Borders, Gamepad
 // Return true when using auto-fit (double click on resize grip)
-static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& size_auto_fit, int* border_held, int resize_grip_count, ImU32 resize_grip_col[4])
+static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& size_auto_fit, int* border_held, int resize_grip_count, ImU32 resize_grip_col[4], const ImRect& visibility_rect)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindowFlags flags = window->Flags;
@@ -5183,6 +5071,9 @@ static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& s
             // Resize from any of the four corners
             // We don't use an incremental MouseDelta but rather compute an absolute target size based on mouse position
             ImVec2 corner_target = g.IO.MousePos - g.ActiveIdClickOffset + ImLerp(grip.InnerDir * grip_hover_outer_size, grip.InnerDir * -grip_hover_inner_size, grip.CornerPosN); // Corner of the window corresponding to our corner grip
+            ImVec2 clamp_min = ImVec2(grip.CornerPosN.x == 1.0f ? visibility_rect.Min.x : -FLT_MAX, grip.CornerPosN.y == 1.0f ? visibility_rect.Min.y : -FLT_MAX);
+            ImVec2 clamp_max = ImVec2(grip.CornerPosN.x == 0.0f ? visibility_rect.Max.x : +FLT_MAX, grip.CornerPosN.y == 0.0f ? visibility_rect.Max.y : +FLT_MAX);
+            corner_target = ImClamp(corner_target, clamp_min, clamp_max);
             CalcResizePosSizeFromAnyCorner(window, corner_target, grip.CornerPosN, &pos_target, &size_target);
         }
         if (resize_grip_n == 0 || held || hovered)
@@ -5208,6 +5099,9 @@ static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& s
             if (border_n == 1) { border_posn = ImVec2(1, 0); border_target.x = (g.IO.MousePos.x - g.ActiveIdClickOffset.x + WINDOWS_RESIZE_FROM_EDGES_HALF_THICKNESS); } // Right
             if (border_n == 2) { border_posn = ImVec2(0, 1); border_target.y = (g.IO.MousePos.y - g.ActiveIdClickOffset.y + WINDOWS_RESIZE_FROM_EDGES_HALF_THICKNESS); } // Bottom
             if (border_n == 3) { border_posn = ImVec2(0, 0); border_target.x = (g.IO.MousePos.x - g.ActiveIdClickOffset.x + WINDOWS_RESIZE_FROM_EDGES_HALF_THICKNESS); } // Left
+            ImVec2 clamp_min = ImVec2(border_n == 1 ? visibility_rect.Min.x : -FLT_MAX, border_n == 2 ? visibility_rect.Min.y : -FLT_MAX);
+            ImVec2 clamp_max = ImVec2(border_n == 3 ? visibility_rect.Max.x : +FLT_MAX, border_n == 0 ? visibility_rect.Max.y : +FLT_MAX);
+            border_target = ImClamp(border_target, clamp_min, clamp_max);
             CalcResizePosSizeFromAnyCorner(window, border_target, border_posn, &pos_target, &size_target);
         }
     }
@@ -5229,6 +5123,7 @@ static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& s
         {
             const float NAV_RESIZE_SPEED = 600.0f;
             nav_resize_delta *= ImFloor(NAV_RESIZE_SPEED * g.IO.DeltaTime * ImMin(g.IO.DisplayFramebufferScale.x, g.IO.DisplayFramebufferScale.y));
+            nav_resize_delta = ImMax(nav_resize_delta, visibility_rect.Min - window->Pos - window->Size);
             g.NavWindowingToggleLayer = false;
             g.NavDisableMouseHover = true;
             resize_grip_col[0] = GetColorU32(ImGuiCol_ResizeGripActive);
@@ -5253,13 +5148,13 @@ static bool ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& s
     return ret_auto_fit;
 }
 
-static inline void ClampWindowRect(ImGuiWindow* window, const ImRect& viewport_rect, const ImVec2& padding)
+static inline void ClampWindowRect(ImGuiWindow* window, const ImRect& visibility_rect)
 {
     ImGuiContext& g = *GImGui;
     ImVec2 size_for_clamping = window->Size;
     if (g.IO.ConfigWindowsMoveFromTitleBarOnly && !(window->Flags & ImGuiWindowFlags_NoTitleBar))
         size_for_clamping.y = window->TitleBarHeight();
-    window->Pos = ImClamp(window->Pos, viewport_rect.Min + padding - size_for_clamping, viewport_rect.Max - padding);
+    window->Pos = ImClamp(window->Pos, visibility_rect.Min - size_for_clamping, visibility_rect.Max);
 }
 
 static void ImGui::RenderWindowOuterBorders(ImGuiWindow* window)
@@ -5773,17 +5668,17 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         else if ((flags & ImGuiWindowFlags_Tooltip) != 0 && !window_pos_set_by_api && !window_is_child_tooltip)
             window->Pos = FindBestWindowPosForPopup(window);
 
+        // Calculate the range of allowed position for that window (to be movable and visible past safe area padding)
+        // When clamping to stay visible, we will enforce that window->Pos stays inside of visibility_rect.
+        ImRect viewport_rect(GetViewportRect());
+        ImVec2 visibility_padding = ImMax(style.DisplayWindowPadding, style.DisplaySafeAreaPadding);
+        ImRect visibility_rect(viewport_rect.Min + visibility_padding, viewport_rect.Max - visibility_padding);
+
         // Clamp position/size so window stays visible within its viewport or monitor
         // Ignore zero-sized display explicitly to avoid losing positions if a window manager reports zero-sized window when initializing or minimizing.
-        ImRect viewport_rect(GetViewportRect());
         if (!window_pos_set_by_api && !(flags & ImGuiWindowFlags_ChildWindow) && window->AutoFitFramesX <= 0 && window->AutoFitFramesY <= 0)
-        {
-            ImVec2 clamp_padding = ImMax(style.DisplayWindowPadding, style.DisplaySafeAreaPadding);
-            if (viewport_rect.GetWidth() > 0 && viewport_rect.GetHeight() > 0.0f)
-            {
-                ClampWindowRect(window, viewport_rect, clamp_padding);
-            }
-        }
+            if (viewport_rect.GetWidth() > 0.0f && viewport_rect.GetHeight() > 0.0f)
+                ClampWindowRect(window, visibility_rect);
         window->Pos = ImFloor(window->Pos);
 
         // Lock window rounding for the frame (so that altering them doesn't cause inconsistencies)
@@ -5810,7 +5705,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         const int resize_grip_count = g.IO.ConfigWindowsResizeFromEdges ? 2 : 1; // Allow resize from lower-left if we have the mouse cursor feedback for it.
         const float resize_grip_draw_size = IM_FLOOR(ImMax(g.FontSize * 1.35f, window->WindowRounding + 1.0f + g.FontSize * 0.2f));
         if (!window->Collapsed)
-            if (UpdateWindowManualResize(window, size_auto_fit, &border_held, resize_grip_count, &resize_grip_col[0]))
+            if (UpdateWindowManualResize(window, size_auto_fit, &border_held, resize_grip_count, &resize_grip_col[0], visibility_rect))
                 use_current_size_for_scrollbar_x = use_current_size_for_scrollbar_y = true;
         window->ResizeBorderHeld = (signed char)border_held;
 
